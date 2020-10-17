@@ -11,36 +11,54 @@
 */
 
 #include <iostream>
+#include <chrono>
 
 void find_elements(const int n, const int* const a, const int m, const int* const b, int* const size, int* const result);
 int exp_search(const int size, const int* const arr, const int x);
-int bin_search(const int size, const int* const arr, const int x, const int b_i, const int l_boundary, const int r_boundary);
+int bin_search(const int size, const int* const arr, const int b_i, const int l_boundary, const int r_boundary);
+void run(std::istream& in, std::ostream& out);
 
 int main() {
+  auto start = std::chrono::high_resolution_clock::now();
+  run(std::cin, std::cout);
+  auto finish = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed = finish - start;
+
+  std::cout << "All Time is: " << elapsed.count() << std::endl;
+
+  return 0;
+}
+
+void run(std::istream& in, std::ostream& out) {
   int n = 0, m = 0;
 
-  std::cin >> n;
-  std::cin >> m;
+  in >> n;
+  in >> m;
 
   int* a = new int(n);
   int* b = new int(m);
 
   for(int i = 0; i < n; i++) {
-    std::cin >> a[i];
+    in >> a[i];
   }
 
   for(int i = 0; i < m; i++) {
-    std::cin >> b[i];
+    in >> b[i];
   }
 
   int size = 0;
   int* result = new int(m);
+  auto start = std::chrono::high_resolution_clock::now();
   find_elements(n, a, m, b, &size, result);
+  auto finish = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed = finish - start;
+
+  std::cout << "Time is: " << elapsed.count() << std::endl;
 
   for(int i = 0; i < size; i++) {
-    std::cout << result[i];
+    out << result[i] << " ";
   }
-  std::cout << std::endl;
+  out << std::endl;
 
   delete a;
   delete b;
@@ -50,9 +68,16 @@ int main() {
 void find_elements(const int n, const int* const a, const int m, const int* const b, int* const size, int* const result) {
   *size = 0;
 
+  std::cout << "n is :" << n << std::endl;
+  std::cout << "m is :" << m << std::endl;
   for(int i = 0; i < m; i++) {
+    std::cout << "A[" << i << "] is :" << a[i] << std::endl;
+    std::cout << "B[" << i << "] is :" << b[i] << std::endl;
+    std::cout << std::endl;
     int r_boundary = exp_search(n, a, b[i]);
-    int index = bin_search(n, a, a[r_boundary], b[i], r_boundary/2, r_boundary);
+    std::cout << "Right boundary: " << r_boundary << std::endl;
+    int index = bin_search(n, a, b[i], r_boundary/2, r_boundary);
+    std::cout << "Index: " << r_boundary << std::endl;
 
     result[*size] = index;
     (*size)++;
@@ -68,13 +93,17 @@ int exp_search(const int size, const int* const arr, const int x) {
   return i;
 }
 
-int bin_search(const int size, const int* const arr, const int x, const int b_i, const int l_boundary, const int r_boundary) {
+int bin_search(const int size, const int* const arr, const int b_i, const int l_boundary, const int r_boundary) {
   int left = l_boundary;
   int right = r_boundary;
 
+  if(right > size) {
+    right = size-1;
+  }
+
   while(left < right) {
     int mid = left + ((right - left) / 2);
-    if(arr[mid] <= x && arr[mid] >= b_i) {
+    if(arr[mid] >= b_i) {
       right = mid;
     } else {
       left = mid + 1;
