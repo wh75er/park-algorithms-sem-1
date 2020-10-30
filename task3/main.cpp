@@ -1,11 +1,17 @@
 #include <assert.h>
-#include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include <sstream>
+#include <chrono>
 
 #define DEFAULT_BUF_SIZE 8
 
 class RingQueue {
+  enum Direction {
+    Left,
+    Right,
+  };
+
   public:
     RingQueue() {
       buffer = new int[bufSize];
@@ -21,11 +27,16 @@ class RingQueue {
       }
 
       if(isFull() || isEmpty()) {
-        shiftElements(popi, ringSize, ringSize+1);
         ringSize++;
+
+        Direction dir = shiftValues(popi);
+
+        if(dir == Left) {
+          pushi = decrement(pushi);
+          popi = decrement(popi);
+        }
       } else if(!isFull() && !isEmpty()) {
-        shiftElements(popi, pushi, ringSize);
-        pushi = (pushi + 1) % ringSize;
+        popi = decrement(popi);
       }
 
       buffer[popi] = value;
@@ -52,16 +63,15 @@ class RingQueue {
         resizeBuf();
       }
 
-      if(isEmpty()) {
+      if(isFull() || isEmpty()) {
         ringSize++;
-      } else if(isFull()) {
-        if(pushi == popi && popi == 0) {
-          pushi = ringSize;
+        Direction dir = shiftValues(popi);
+
+        if(dir == Left) {
+          pushi = decrement(pushi);
         } else {
-          shiftElements(popi, ringSize, ringSize+1);
-          popi++;
+          popi = (popi + 1) % ringSize;
         }
-        ringSize++;
       }
 
       buffer[pushi] = value;
@@ -75,11 +85,7 @@ class RingQueue {
         return -1;
       }
 
-      if(pushi == 0) {
-        pushi = ringSize-1;
-      } else {
-        pushi--;
-      }
+      pushi = decrement(pushi);
       
       volume--;
 
@@ -111,15 +117,43 @@ class RingQueue {
       return false;
     }
 
-    void shiftElements(int left, int right, size_t size) {
-      for(size_t i = left; i % size < right; i++) {
-        buffer[(i+1) % size] = buffer[i % size];
+    size_t decrement(size_t value) {
+      if(value == 0) {
+        value = ringSize - 1;
+      } else {
+        value--;
       }
+
+      return value;
+    } 
+
+    void shiftRight(size_t value) {
+      for(size_t i = ringSize - 1; i != value; i = decrement(i)) {
+        buffer[i] = buffer[decrement(i)];
+      }
+    }
+
+    void shiftLeft(size_t value) {
+      for(size_t i = ringSize - 1; i != value; i = (i+1) % ringSize) {
+        buffer[i % ringSize] = buffer[(i + 1) % ringSize];
+      }
+    }
+
+    Direction shiftValues(size_t value) {
+      size_t mid = ringSize / 2;
+
+      if(value < mid) {
+        shiftLeft(value);
+        return Left;
+      }
+
+      shiftRight(value);
+      return Right;
     }
 
     void resizeBuf() {
       bufSize *= 2;
-      int* temp = new int(bufSize);
+      int* temp = new int[bufSize];
       
       memcpy(temp, buffer, ringSize * sizeof(int));
       delete [] buffer;
@@ -173,10 +207,71 @@ void testQueue() {
     run(input, output);
     assert(output.str() == "YES");
   }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "7 3 11 3 22 3 33 2 11 2 22 2 33 2 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "9 3 11 3 22 3 33 1 00 2 00 2 11 2 22 2 33 2 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "27 3 11 3 22 3 33 1 00 2 00 2 11 1 55 3 66 3 77 3 88 3 99 3 99 3 99 3 99 3 99 4 99 4 99 4 99 4 99 4 99 2 55 2 22 2 33 2 66 4 88 2 77 2 -1"; 
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "3 1 11 2 11 2 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "3 3 11 2 11 2 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "19 3 11 3 22 3 33 3 44 3 55 2 11 2 22 2 33 3 66 3 77 3 88 3 99 4 99 4 88 4 77 4 66 2 44 2 55 4 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "17 3 11 3 22 3 33 3 44 3 55 2 11 2 22 2 33 1 66 1 77 3 88 4 88 4 55 4 44 4 66 4 77 4 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "21 3 11 3 22 3 33 3 44 3 55 2 11 2 22 2 33 3 66 1 77 1 88 1 99 1 10 4 66 4 55 4 44 4 77 4 88 4 99 4 10 4 -1";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
 }
 
 int main() {
+//  auto start = std::chrono::system_clock::now();
   run(std::cin, std::cout);
+//  auto end = std::chrono::system_clock::now();
+//  std::chrono::duration<double> elapsed = end-start;
+//  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+//  std::cout << "Time: " << millis  << "ms" << std::endl;
 
 //  testQueue();
 
