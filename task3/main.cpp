@@ -26,7 +26,13 @@ class RingQueue {
         resizeBuf();
       }
 
-      if(isFull() || isEmpty()) {
+      if(isEmpty()) {
+        if(!ringSize) {
+          ringSize++;
+        }
+      }
+
+      if(isFull()) {
         ringSize++;
 
         Direction dir = shiftValues(popi);
@@ -63,8 +69,15 @@ class RingQueue {
         resizeBuf();
       }
 
-      if(isFull() || isEmpty()) {
+      if(isEmpty()) {
+        if(!ringSize) {
+          ringSize++;
+        }
+      }
+
+      if(isFull()) {
         ringSize++;
+
         Direction dir = shiftValues(popi);
 
         if(dir == Left) {
@@ -263,15 +276,22 @@ void testQueue() {
     run(input, output);
     assert(output.str() == "YES");
   }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "13 3 118 2 118 3 101 2 101 3 6 3 110 3 3 2 6 2 110 2 3 3 91 2 91 3 70";
+    run(input, output);
+    assert(output.str() == "YES");
+  }
 }
 
 int main() {
-//  auto start = std::chrono::system_clock::now();
+  auto start = std::chrono::system_clock::now();
   run(std::cin, std::cout);
-//  auto end = std::chrono::system_clock::now();
-//  std::chrono::duration<double> elapsed = end-start;
-//  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-//  std::cout << "Time: " << millis  << "ms" << std::endl;
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end-start;
+  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+  std::cout << "Time: " << millis  << "ms" << std::endl;
 
 //  testQueue();
 
