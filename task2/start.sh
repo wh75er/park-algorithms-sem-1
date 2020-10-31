@@ -1,6 +1,6 @@
 #!/bin/sh
 
-volume=5
+volume=1000
 input="${volume} ${volume}\n"
 
 for i in $(seq 1 $volume); do 
