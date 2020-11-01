@@ -14,7 +14,7 @@ class RingQueue {
 
   public:
     RingQueue() {
-      buffer = new int[bufSize];
+      buffer = new int[capacity];
     }
 
     ~RingQueue() {
@@ -22,75 +22,39 @@ class RingQueue {
     }
 
     void push_front(int value) {
-      if(isOverflow()) {
+      if(decrement(head) == tail) {
         resizeBuf();
       }
 
-      if(isEmpty()) {
-        if(!ringSize) {
-          ringSize++;
-        }
-      }
+      head = decrement(head);
+      buffer[head] = value;
 
-      if(isFull()) {
-        ringSize++;
-
-        Direction dir = shiftValues(popi);
-
-        if(dir == Left) {
-          pushi = decrement(pushi);
-          popi = decrement(popi);
-        }
-      } else if(!isFull() && !isEmpty()) {
-        popi = decrement(popi);
-      }
-
-      buffer[popi] = value;
-
-      volume++;
+      size++;
     }
 
     int pop_front() {
       if(isEmpty()) {
         return -1;
       }
+      
+      int value = buffer[head];
 
-      int value = buffer[popi];
+      head = (head + 1) % capacity;
 
-      popi = (popi + 1) % ringSize;
-
-      volume--;
+      size--;
 
       return value;
     }
 
     void push_back(int value) {
-      if(isOverflow()) {
+      if((tail + 1) % capacity == head) {
         resizeBuf();
       }
 
-      if(isEmpty()) {
-        if(!ringSize) {
-          ringSize++;
-        }
-      }
+      buffer[tail] = value;
+      tail = (tail + 1) % capacity;
 
-      if(isFull()) {
-        ringSize++;
-
-        Direction dir = shiftValues(popi);
-
-        if(dir == Left) {
-          pushi = decrement(pushi);
-        } else {
-          popi = (popi + 1) % ringSize;
-        }
-      }
-
-      buffer[pushi] = value;
-      pushi = (pushi + 1) % ringSize;
-
-      volume++;
+      size++;
     }
 
     int pop_back() {
@@ -98,32 +62,15 @@ class RingQueue {
         return -1;
       }
 
-      pushi = decrement(pushi);
-      
-      volume--;
+      tail = decrement(tail);
+      size--;
 
-      return buffer[pushi];
+      return buffer[tail];
     }
 
   private:
-    bool isOverflow() {
-      if(ringSize == bufSize) {
-        return true;
-      }
-
-      return false;
-    }
-
     bool isEmpty() {
-      if(!volume){
-        return true;
-      }
-
-      return false;
-    }
-
-    bool isFull() {
-      if(volume && pushi == popi) {
+      if(!size){
         return true;
       }
 
@@ -132,7 +79,7 @@ class RingQueue {
 
     size_t decrement(size_t value) {
       if(value == 0) {
-        value = ringSize - 1;
+        value = capacity - 1;
       } else {
         value--;
       }
@@ -140,44 +87,28 @@ class RingQueue {
       return value;
     } 
 
-    void shiftRight(size_t value) {
-      for(size_t i = ringSize - 1; i != value; i = decrement(i)) {
-        buffer[i] = buffer[decrement(i)];
-      }
-    }
-
-    void shiftLeft(size_t value) {
-      for(size_t i = ringSize - 1; i != value; i = (i+1) % ringSize) {
-        buffer[i % ringSize] = buffer[(i + 1) % ringSize];
-      }
-    }
-
-    Direction shiftValues(size_t value) {
-      size_t mid = ringSize / 2;
-
-      if(value < mid) {
-        shiftLeft(value);
-        return Left;
-      }
-
-      shiftRight(value);
-      return Right;
-    }
-
     void resizeBuf() {
-      bufSize *= 2;
-      int* temp = new int[bufSize];
+      size_t prevCapacity = capacity;
+      capacity *= 2;
+      int* temp = new int[capacity];
       
-      memcpy(temp, buffer, ringSize * sizeof(int));
+      size_t j = 0;
+      for(size_t i = head; i != tail; i = (i+1) % prevCapacity) {
+        temp[j] = buffer[i];
+        j++;
+      }
+
+      head = 0;
+      tail = size;
+
       delete [] buffer;
       buffer = temp;
     }
 
-    size_t popi = 0;
-    size_t pushi = 0;
-    size_t volume = 0;
-    size_t ringSize = 0;
-    size_t bufSize = DEFAULT_BUF_SIZE;
+    size_t head = 0;
+    size_t tail = 0;
+    size_t size = 0;
+    size_t capacity = DEFAULT_BUF_SIZE;
     int* buffer = nullptr;
 };
 
@@ -286,12 +217,12 @@ void testQueue() {
 }
 
 int main() {
-  auto start = std::chrono::system_clock::now();
+//  auto start = std::chrono::system_clock::now();
   run(std::cin, std::cout);
-  auto end = std::chrono::system_clock::now();
-  std::chrono::duration<double> elapsed = end-start;
-  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-  std::cout << "Time: " << millis  << "ms" << std::endl;
+//  auto end = std::chrono::system_clock::now();
+//  std::chrono::duration<double> elapsed = end-start;
+//  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+//  std::cout << "Time: " << millis  << "ms" << std::endl;
 
 //  testQueue();
 
