@@ -44,6 +44,8 @@ public:
 
     int value = buffer[size - 1];
     size--;
+
+    return value;
   }
 
   void push_front(int value) {
@@ -156,6 +158,9 @@ private:
 
 class Heap {
 public:
+  Heap(bool (*_cmp)(int&, int&)) : cmp(_cmp) {
+  }
+
   Heap(const Array& _arr, bool (*_cmp)(int&, int&)) : cmp(_cmp) { 
     arr.copy(_arr);
     buildHeap();
@@ -192,6 +197,14 @@ public:
     assert(!arr.isEmpty());
 
     return arr[0];
+  }
+
+  bool isEmpty() const {
+    if (arr.isEmpty()) {
+      return true;
+    }
+
+    return false;
   }
 
 private:
@@ -255,10 +268,25 @@ void run(std::istream& input, std::ostream& output) {
   int windowSize = 0;
   input >> windowSize;
 
-  for(int i = 0; i + windowSize <= n; i++) {
-    Heap h = Heap(arr, i, i + windowSize, cmp);
-    output << h.peekMax() << " ";
+  Heap heap = Heap(arr, 0, windowSize, cmp);
+  Heap drop = Heap(cmp);
+  for(int i = windowSize; i < n; i++) {
+    output << heap.peekMax() << " ";
+
+    if(heap.peekMax() == arr[i - windowSize]) {
+      heap.extractMax();
+    } else {
+      drop.insert(arr[i - windowSize]);
+    }
+
+    while(!drop.isEmpty() && drop.peekMax() == heap.peekMax()) {
+      heap.extractMax();
+      drop.extractMax();
+    }
+
+    heap.insert(arr[i]);
   }
+  output << heap.peekMax() << " ";
 }
 
 int main() {
