@@ -22,9 +22,9 @@ int median_of_three(int left, int mid, int right) {
 }
 
 int partition(int* arr, int left, int right, bool (*cmp)(int, int)) {
-  int pivot = median_of_three(left, (right - left) / 2, right);
+  int pivot = median_of_three(left, left + (right - left) / 2, right - 1);
 
-  if(pivot != right-1) {
+  if(pivot != right - 1) {
     std::swap(arr[pivot], arr[right - 1]);
     pivot = right - 1;
   }
@@ -33,14 +33,13 @@ int partition(int* arr, int left, int right, bool (*cmp)(int, int)) {
   int i = pivot - 1;
 
   while(i >= left && j >= left) {
-    if (i != j && !cmp(arr[i], arr[pivot])) {
+    if (!cmp(arr[i], arr[pivot])) {
       std::swap(arr[i], arr[j]);
-    }
-    
-    if (!cmp(arr[j], arr[pivot])) {
+      i--;
       j--;
+    } else {
+      i--;
     }
-    i--;
   }
   
   std::swap(arr[j+1], arr[pivot]);
