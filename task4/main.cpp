@@ -6,7 +6,7 @@
 #define LEFT(i) (2*i + 1)
 #define RIGHT(i) (2*i + 2)
 
-#define DEFAULT_BUF_SIZE 8
+#define DEFAULT_BUF_SIZE 0
 
 bool cmp(int &a, int &b) {
   if(a <= b) {
@@ -140,7 +140,11 @@ private:
   void resizeBuf() {
     size_t prevCapacity = capacity;
 
-    capacity *= 2;
+   if (capacity == 0) {
+      capacity = 1;
+    } else {
+      capacity *= 2;
+    }
     int* temp = new int[capacity];
 
     memcpy(temp, buffer, size * sizeof(int));
@@ -253,6 +257,33 @@ private:
   bool (*cmp)(int&, int&) = nullptr;
 };
 
+Array find_maxs(Array& arr, int n, int windowSize) {
+  Heap heap = Heap(arr, 0, windowSize, cmp);
+  Heap drop = Heap(cmp);
+
+  Array results;
+
+  for(int i = windowSize; i < n; i++) {
+    results.push_back(heap.peekMax());
+
+    if(heap.peekMax() == arr[i - windowSize]) {
+      heap.extractMax();
+    } else {
+      drop.insert(arr[i - windowSize]);
+    }
+
+    while(!drop.isEmpty() && drop.peekMax() == heap.peekMax()) {
+      heap.extractMax();
+      drop.extractMax();
+    }
+
+    heap.insert(arr[i]);
+  }
+  results.push_back(heap.peekMax());
+
+  return results;
+}
+
 void run(std::istream& input, std::ostream& output) {
   int n = 0;
   input >> n;
@@ -268,25 +299,12 @@ void run(std::istream& input, std::ostream& output) {
   int windowSize = 0;
   input >> windowSize;
 
-  Heap heap = Heap(arr, 0, windowSize, cmp);
-  Heap drop = Heap(cmp);
-  for(int i = windowSize; i < n; i++) {
-    output << heap.peekMax() << " ";
+  Array results = find_maxs(arr, n, windowSize);
 
-    if(heap.peekMax() == arr[i - windowSize]) {
-      heap.extractMax();
-    } else {
-      drop.insert(arr[i - windowSize]);
-    }
-
-    while(!drop.isEmpty() && drop.peekMax() == heap.peekMax()) {
-      heap.extractMax();
-      drop.extractMax();
-    }
-
-    heap.insert(arr[i]);
+  for(int i = 0; i < results.Size(); i++) {
+    output << results[i] << " ";
   }
-  output << heap.peekMax() << " ";
+
 }
 
 int main() {
