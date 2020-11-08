@@ -22,7 +22,7 @@ class RingQueue {
     }
 
     void push_front(int value) {
-      if(decrement(head) == tail) {
+      if(!capacity || decrement(head) == tail) {
         resizeBuf();
       }
 
@@ -47,7 +47,7 @@ class RingQueue {
     }
 
     void push_back(int value) {
-      if((tail + 1) % capacity == head) {
+      if(!capacity || (tail + 1) % capacity == head) {
         resizeBuf();
       }
 
@@ -89,13 +89,20 @@ class RingQueue {
 
     void resizeBuf() {
       size_t prevCapacity = capacity;
-      capacity *= 2;
+
+      if (!capacity) {
+        capacity = DEFAULT_BUF_SIZE;
+      } else {
+        capacity *= 2;
+      }
       int* temp = new int[capacity];
       
       size_t j = 0;
-      for(size_t i = head; i != tail; i = (i+1) % prevCapacity) {
-        temp[j] = buffer[i];
-        j++;
+      if (prevCapacity) {
+        for(size_t i = head; i != tail; i = (i+1) % prevCapacity) {
+          temp[j] = buffer[i];
+          j++;
+        }
       }
 
       head = 0;
@@ -108,7 +115,7 @@ class RingQueue {
     size_t head = 0;
     size_t tail = 0;
     size_t size = 0;
-    size_t capacity = DEFAULT_BUF_SIZE;
+    size_t capacity = 0;
     int* buffer = nullptr;
 };
 
