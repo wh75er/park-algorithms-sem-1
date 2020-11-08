@@ -2,7 +2,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define DEFAULT_BUF_SIZE 8
+#define DEFAULT_BUF_SIZE 0
 
 class Array {
 public:
@@ -96,7 +96,11 @@ private:
   void resizeBuf() {
     size_t prevCapacity = capacity;
 
-    capacity *= 2;
+    if (capacity == 0) {
+      capacity = 1;
+    } else {
+      capacity *= 2;
+    }
     int* temp = new int[capacity];
 
     memcpy(temp, buffer, size * sizeof(int));
@@ -110,6 +114,26 @@ private:
   size_t size = 0;
   size_t capacity = 0;
 };
+
+size_t count_sums(Array &a, int n, Array &b, int m, int k) {
+  size_t count = 0;
+  int i = 0;
+  int j = m-1;
+  int sum = 0;
+  while(i < n && j >= 0) {
+    sum = a[i] + b[j];
+    if (sum == k) {
+      count++;
+      i++;
+    } else if (sum > k) {
+      j--;
+    } else {
+      i++;
+    }
+  }
+
+  return count;
+}
 
 void run(std::istream& input, std::ostream& output) {
   size_t n = 0;
@@ -135,23 +159,7 @@ void run(std::istream& input, std::ostream& output) {
   int k = 0;
   input >> k;
 
-
-  size_t count = 0;
-  int i = 0;
-  int j = m-1;
-  int sum = 0;
-  while(i < n && j >= 0) {
-    sum = a[i] + b[j];
-
-    if (sum == k) {
-      count++;
-      i++;
-    } else if (sum > k) {
-      j--;
-    } else {
-      i++;
-    }
-  }
+  size_t count = count_sums(a, n, b, m, k);
 
   output << count;
 }
