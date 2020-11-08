@@ -1,5 +1,7 @@
 #include <algorithm>
 #include <iostream>
+#include <time.h>
+#include <stdlib.h>
 
 bool cmp(int a, int b) {
   if (a < b) {
@@ -9,12 +11,12 @@ bool cmp(int a, int b) {
   return false;
 }
 
-int median_of_three(int left, int mid, int right) {
-  if ((left < mid && mid < right) || (right < mid && mid < left)) {
+int median_of_three(int* arr, int left, int mid, int right) {
+  if ((arr[left] < arr[mid] && arr[mid] < arr[right]) || (arr[right] < arr[mid] && arr[mid] < arr[left])) {
     return mid;
   }
 
-  if ((mid < left && left < right) || (right < left && left < mid)) {
+  if ((arr[mid] < arr[left] && arr[left] < arr[right]) || (arr[right] < arr[left] && arr[left] < arr[mid])) {
     return left;
   }
 
@@ -22,7 +24,11 @@ int median_of_three(int left, int mid, int right) {
 }
 
 int partition(int* arr, int left, int right, bool (*cmp)(int, int)) {
-  int pivot = median_of_three(left, left + (right - left) / 2, right - 1);
+  int a = left + (rand() % (right - left));
+  int b = left + (rand() % (right - left));
+  int c = left + (rand() % (right - left));
+
+  int pivot = median_of_three(arr, a, b, c);
 
   if(pivot != right - 1) {
     std::swap(arr[pivot], arr[right - 1]);
@@ -83,6 +89,7 @@ void run(std::istream& input, std::ostream& output) {
 }
 
 int main() { 
+  srand( (unsigned)time(NULL) );
   run(std::cin, std::cout);
 
   return 0;
