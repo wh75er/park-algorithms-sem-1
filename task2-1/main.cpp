@@ -29,14 +29,14 @@ class HashMap {
 public:
   HashMap(Hash hash = Hash()):
     items_count(0),
-    max_load_factor(3/4),
+    max_load_factor(3.f/4.f),
     hash(hash)
   {
   };
   ~HashMap() = default;
 
   bool insert(const Key& key) {
-    if (items_count > max_load_factor * map.size() || !map.size()) {
+    if (items_count > max_load_factor * map.size() || map.empty()) {
       grow();
     }
 
@@ -148,11 +148,11 @@ private:
       }
     }
 
-    map = new_map;
+    map = std::move(new_map);
   }
 
   size_t items_count = 0;
-  size_t max_load_factor = 3/4;
+  float max_load_factor = 3.f/4.f;
   std::vector<struct Bucket> map;
   Hash hash;
 };
