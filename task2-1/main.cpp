@@ -54,6 +54,9 @@ public:
       if(iter->key.empty()) {
         iter->key = key;
         iter->marked = true;
+
+        items_count++;
+
         return true;
       }
 
@@ -75,7 +78,7 @@ public:
 
     size_t i = 1;
 
-    while(!iter->key.empty() || iter->marked || iter < map.end()) {
+    while(iter < map.end() && (!iter->key.empty() || iter->marked)) {
       if(!iter->key.empty() && iter->key == key) {
         return true;
       }
@@ -107,6 +110,8 @@ public:
       iter += i * i;
       i++;
     }
+
+    items_count--;
 
     return true;
   }
