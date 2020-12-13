@@ -3,13 +3,14 @@
 #include <string>
 #include <sstream>
 #include <cassert>
+#include <chrono>
 
 #define DEFAULT_MAP_SIZE 8
 
 size_t str_hash(const std::string& data) {
   size_t hash = 0;
   for (char i : data) {
-    hash = hash * 31 + i;
+    hash = hash * 13 + i;
   }
   return hash;
 }
@@ -43,16 +44,14 @@ public:
       grow();
     }
 
-    if (find(key)) {
-      return false;
-    }
-
     size_t pos = hash(key) % map.size();
 
     size_t i = 1;
 
-    while(pos < map.size()) {
-      if(map[pos].key.empty()) {
+    while (pos < map.size()) {
+      if (!map[pos].key.empty() && map[pos].key == key) {
+        break;
+      } else if (map[pos].key.empty()) {
         map[pos].key = key;
         map[pos].marked = true;
 
@@ -68,9 +67,9 @@ public:
     return false;
   }
 
-  bool find(const Key& key) {
+  ssize_t find(const Key& key) {
     if (!items_count) {
-      return false;
+      return -1;
     }
 
     size_t pos = hash(key) % map.size();
@@ -79,35 +78,24 @@ public:
 
     while(!map[pos].key.empty() || map[pos].marked) {
       if(!map[pos].key.empty() && map[pos].key == key) {
-        return true;
+        return pos;
       }
 
       pos = probe(pos, i, map.size());
       i++;
     }
 
-    return false;
+    return -1;
   };
 
   bool remove(const Key& key) {
-    if (!find(key)) {
+    ssize_t pos = find(key);
+
+    if ( pos == -1) {
       return false;
     }
 
-    size_t pos = hash(key) % map.size();
-
-    size_t i = 1;
-
-    while(pos < map.size()) {
-      if(map[pos].key == key) {
-        map[pos].key.clear();
-        break;
-      }
-
-      pos = probe(pos, i, map.size());
-      i++;
-    }
-
+    map[pos].key.clear();
     items_count--;
 
     return true;
@@ -172,7 +160,7 @@ void run(std::istream& input, std::ostream& output) {
         res *= hmap.remove(key);
         break;
       case '?':
-        res *= hmap.find(key);
+        res *= hmap.find(key) != -1;
         break;
       default:
         exit(1);
@@ -222,30 +210,30 @@ void testHashMap() {
   {
     std::stringstream input;
     std::stringstream output;
-    input << "+ uivtovnf\n"
-             "+ utmtlrvd\n"
-             "+ alirid\n"
-             "+ jlxlldqkwol\n"
-             "- uivtovnf\n"
-             "- utmtlrvd\n"
-             "- alirid\n"
-             "- jlxlldqkwol\n"
-             "+ fbietxueb\n"
-             "+ yhtg\n"
-             "+ ultdayoiynwxvkb\n"
-             "+ ttddwoaxs\n"
-             "- fbietxueb\n"
-             "- yhtg\n"
-             "- ultdayoiynwxvkb\n"
-             "- ttddwoaxs\n"
-             "+ dqleuopfqnoqvqwpm\n"
-             "+ llyyxchrdwyodyoqei\n"
-             "+ fctocrpxombv\n"
-             "+ aixg\n"
-             "- dqleuopfqnoqvqwpm\n"
-             "- llyyxchrdwyodyoqei\n"
-             "- fctocrpxombv\n"
-             "- aixg";
+    input << "+ h1\n"
+             "+ h2\n"
+             "+ h3\n"
+             "+ h4\n"
+             "+ h5\n"
+             "+ h6\n"
+             "+ h7\n"
+             "+ h8\n"
+             "+ h9\n"
+             "+ h10\n"
+             "+ h11\n"
+             "+ h12\n"
+             "+ h13\n"
+             "+ h14\n"
+             "- h14\n"
+             "- h13\n"
+             "- h12\n"
+             "- h11\n"
+             "- h10\n"
+             "- h9\n"
+             "- h8\n"
+             "- h7\n"
+             "- h6\n"
+             "? h5\n";
 
     run(input, output);
     std::string ok = "OK\n";
@@ -258,9 +246,142 @@ void testHashMap() {
 
     assert(output.str() == expectation);
   }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "+ h1\n"
+             "+ h2\n"
+             "+ h3\n"
+             "+ h4\n"
+             "+ h5\n"
+             "+ h6\n"
+             "+ h7\n"
+             "+ h8\n"
+             "+ h9\n"
+             "+ h10\n"
+             "- h10\n"
+             "- h9\n"
+             "- h8\n"
+             "- h7\n"
+             "- h6\n"
+             "- h5\n"
+             "- h4\n"
+             "- h3\n"
+             "- h2\n"
+             "- h1\n";
+
+    run(input, output);
+    std::string ok = "OK\n";
+    std::string fail = "FAIL\n";
+    std::string expectation = "";
+
+    for (auto i = 0; i < 20; i++) {
+      expectation += ok;
+    }
+
+    assert(output.str() == expectation);
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "+ h1\n"
+             "+ h2\n"
+             "+ h3\n"
+             "+ h4\n"
+             "+ h5\n"
+             "+ h6\n"
+             "+ h7\n"
+             "+ h8\n"
+             "+ h9\n"
+             "+ h10\n"
+             "- h10\n"
+             "- h9\n"
+             "- h8\n"
+             "- h7\n"
+             "- h6\n"
+             "- h5\n"
+             "- h4\n"
+             "- h3\n"
+             "- h2\n"
+             "- h1\n"
+             "? h1\n"
+             "+ h1\n"
+             "? h1\n"
+             "- h1\n"
+             "? h1\n";
+
+    run(input, output);
+    std::string ok = "OK\n";
+    std::string fail = "FAIL\n";
+    std::string expectation = "";
+
+    for (auto i = 0; i < 20; i++) {
+      expectation += ok;
+    }
+    expectation += fail + ok + ok + ok + fail;
+
+    assert(output.str() == expectation);
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "+ h1\n"
+             "+ h2\n"
+             "+ h3\n"
+             "+ h4\n"
+             "+ h5\n"
+             "+ h6\n"
+             "+ h7\n"
+             "+ h8\n"
+             "+ h9\n"
+             "+ h10\n"
+             "- h10\n"
+             "- h9\n"
+             "- h8\n"
+             "- h7\n"
+             "- h6\n"
+             "- h5\n"
+             "- h4\n"
+             "- h3\n"
+             "- h2\n"
+             "- h1\n"
+             "? h1\n"
+             "? h2\n"
+             "? h3\n"
+             "? h4\n"
+             "? h5\n"
+             "? h6\n"
+             "? h7\n"
+             "? h8\n"
+             "? h9\n"
+             "? h10\n";
+
+    run(input, output);
+    std::string ok = "OK\n";
+    std::string fail = "FAIL\n";
+    std::string expectation = "";
+
+    for (auto i = 0; i < 20; i++) {
+      expectation += ok;
+    }
+
+    for (auto i = 0; i < 10; i++) {
+      expectation += fail;
+    }
+
+    assert(output.str() == expectation);
+  }
 }
 
 int main() {
-//  run(std::cin, std::cout);
-  testHashMap();
+//  auto start_time = std::chrono::high_resolution_clock::now();
+
+  run(std::cin, std::cout);
+//  testHashMap();
+
+//  auto end_time = std::chrono::high_resolution_clock::now();
+
+//  auto time = end_time - start_time;
+
+//  std::cout << "Execution time = " << std::chrono::duration_cast<std::chrono::microseconds>(time).count() << "[ms]" << std::endl;
 }
