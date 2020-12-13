@@ -46,21 +46,19 @@ public:
 
     size_t pos = hash(key) % map.size();
 
-    auto iter = map.begin() + pos;
-
     size_t i = 1;
 
-    while(iter < map.end()) {
-      if(iter->key.empty()) {
-        iter->key = key;
-        iter->marked = true;
+    while(pos < map.size()) {
+      if(map[pos].key.empty()) {
+        map[pos].key = key;
+        map[pos].marked = true;
 
         items_count++;
 
         return true;
       }
 
-      iter += i * i;
+      pos = probe(pos, i, map.size());
       i++;
     }
 
@@ -74,16 +72,14 @@ public:
 
     size_t pos = hash(key) % map.size();
 
-    auto iter = map.begin() + pos;
-
     size_t i = 1;
 
-    while(iter < map.end() && (!iter->key.empty() || iter->marked)) {
-      if(!iter->key.empty() && iter->key == key) {
+    while(pos < map.size() && (!map[pos].key.empty() || map[pos].marked)) {
+      if(!map[pos].key.empty() && map[pos].key == key) {
         return true;
       }
 
-      iter += i * i;
+      pos = probe(pos, i, map.size());
       i++;
     }
 
@@ -97,17 +93,15 @@ public:
 
     size_t pos = hash(key) % map.size();
 
-    auto iter = map.begin() + pos;
-
     size_t i = 1;
 
-    while(iter < map.end()) {
-      if(iter->key == key) {
-        iter->key.clear();
+    while(pos < map.size()) {
+      if(map[pos].key == key) {
+        map[pos].key.clear();
         break;
       }
 
-      iter += i * i;
+      pos = probe(pos, i, map.size());
       i++;
     }
 
@@ -131,18 +125,16 @@ private:
       if (!iter.key.empty()) {
         size_t pos = hash(iter.key) % new_map_size;
 
-        auto new_iter = new_map.begin() + pos;
-
         size_t i = 1;
 
-        while(new_iter < new_map.end()) {
-          if(new_iter->key.empty()) {
-            new_iter->key = iter.key;
-            new_iter->marked = true;
+        while(pos < new_map.size()) {
+          if(new_map[pos].key.empty()) {
+            new_map[pos].key = iter.key;
+            new_map[pos].marked = true;
             break;
           }
 
-          new_iter += i * i;
+          pos = probe(pos, i, new_map.size());
           i++;
         }
       }
@@ -150,6 +142,11 @@ private:
 
     map = std::move(new_map);
   }
+
+  size_t probe(size_t idx, size_t i, size_t size) {
+    return (idx + i * i) % size;
+  }
+
 
   size_t items_count = 0;
   float max_load_factor = 3.f/4.f;
