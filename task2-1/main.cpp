@@ -48,10 +48,21 @@ public:
 
     size_t i = 1;
 
+    bool found_deleted_pos = false;
+
+    size_t deleted_pos = 0;
+
     while (pos < map.size()) {
       if (!map[pos].key.empty() && map[pos].key == key) {
         break;
-      } else if (map[pos].key.empty()) {
+      } else if (!found_deleted_pos && map[pos].key.empty() && map[pos].marked == true) {
+        found_deleted_pos = true;
+        deleted_pos = pos;
+      } else if (map[pos].key.empty() && map[pos].marked == false) {
+        if (found_deleted_pos) {
+          pos = deleted_pos;
+        }
+
         map[pos].key = key;
         map[pos].marked = true;
 
@@ -97,6 +108,10 @@ public:
 
     map[pos].key.clear();
     items_count--;
+
+    if (!items_count) {
+      map.erase(map.begin(), map.end());
+    }
 
     return true;
   }
@@ -374,14 +389,14 @@ void testHashMap() {
 }
 
 int main() {
-//  auto start_time = std::chrono::high_resolution_clock::now();
+  auto start_time = std::chrono::high_resolution_clock::now();
 
   run(std::cin, std::cout);
 //  testHashMap();
 
-//  auto end_time = std::chrono::high_resolution_clock::now();
+  auto end_time = std::chrono::high_resolution_clock::now();
 
-//  auto time = end_time - start_time;
+  auto time = end_time - start_time;
 
-//  std::cout << "Execution time = " << std::chrono::duration_cast<std::chrono::microseconds>(time).count() << "[ms]" << std::endl;
+  std::cout << "Execution time = " << std::chrono::duration_cast<std::chrono::microseconds>(time).count() << "[microsecs]" << std::endl;
 }
