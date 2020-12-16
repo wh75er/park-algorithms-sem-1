@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <stack>
+#include <vector>
 
 template <class T>
 struct DefaultComparator {
@@ -38,7 +40,7 @@ public:
     root(nullptr), nodes_count(0) {
   }
 
-  ~AVLTree() {}
+  ~AVLTree() { delete root; }
 
   bool find(const Key& key) {
     return find_(key, root);
@@ -54,6 +56,37 @@ public:
 
   size_t size() {
     return nodes_count;
+  }
+
+  template<typename Lambda>
+  void traverse(size_t n, Lambda&& callback) {
+    if (n > nodes_count || !root) {
+      return;
+    }
+
+    std::stack<Node*> stack;
+
+    Node* curr = root;
+
+    while(n) {
+      if (curr) {
+        stack.push(curr);
+        curr = curr->left;
+      } else {
+        if (stack.empty()) {
+          return;
+        }
+
+        curr = stack.top();
+        stack.pop();
+
+        callback(curr);
+
+        curr = curr->right;
+
+        n--;
+      }
+    }
   }
 
 private:
@@ -214,18 +247,48 @@ private:
   Comparator comp = Comparator();
 };
 
-int main() {
+void run(std::istream& input, std::ostream& output) {
   AVLTree<int> tree;
-  for (int i = 0; i < 100; i++) {
-    tree.insert(i);
-    assert(tree.find(i) == true);
+
+  int n = 0;
+  int value = 0;
+  int k = 0;
+  input >> n;
+
+  while(n)  {
+    input >> value >> k;
+
+    if (value > 0) {
+      tree.insert(value);
+    } else if (value < 0) {
+      tree.erase(std::abs(value));
+    }
+
+    std::vector<int> result;
+    tree.traverse(k+1, [&result]<typename Node>(Node* node){result.push_back(node->key);});
+
+    output << result.back() << std::endl;
+
+    n--;
   }
-  for (int i = 0; i < 100; i++) {
-    assert(tree.find(i) == true);
-    tree.erase(i);
-    assert(tree.find(i) == false);
-  }
-  assert(!tree.size());
-  std::cout << "Ok" << std::endl;
+}
+
+
+int main() {
+//  AVLTree<int> tree;
+//  for (int i = 0; i < 100; i++) {
+//    tree.insert(i);
+//    assert(tree.find(i) == true);
+//  }
+//  for (int i = 0; i < 100; i++) {
+//    assert(tree.find(i) == true);
+//    tree.erase(i);
+//    assert(tree.find(i) == false);
+//  }
+//  assert(!tree.size());
+//  std::cout << "Ok" << std::endl;
+
+  run(std::cin, std::cout);
+
   return 0;
 }
