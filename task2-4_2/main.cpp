@@ -55,7 +55,15 @@ public:
     root(nullptr), nodes_count(0) {
   }
 
-  ~AVLTree() { delete root; }
+  ~AVLTree() {
+    std::vector<Node*> nodes;
+
+    traverse(nodes_count, [&nodes](Node* node){nodes.push_back(node);});
+
+    for (auto& node : nodes) {
+      delete node;
+    }
+  }
 
   bool find(const Key& key) {
     return find_(key, root);
@@ -394,9 +402,9 @@ int main() {
 //  assert(!tree.size());
 //  std::cout << "Ok" << std::endl;
 
-  run(std::cin, std::cout);
+//  run(std::cin, std::cout);
 
-//  testTask();
+  testTask();
 
   return 0;
 }
