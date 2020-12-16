@@ -18,6 +18,7 @@
 #include <iostream>
 #include <stack>
 #include <vector>
+#include <sstream>
 
 
 template <class T>
@@ -185,7 +186,7 @@ private:
     pre_min->left = min_node->right;
     min_node->right = start;
 
-    return balance(min_node);
+    return min_node;
   }
 
   uint8_t height(Node* node) {
@@ -287,6 +288,97 @@ void run(std::istream& input, std::ostream& output) {
   }
 }
 
+void testTask() {
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "9\n"
+             "5 0\n"
+             "9 1\n"
+             "6 1\n"
+             "2 0\n"
+             "3 1\n"
+             "1 0\n"
+             "13 6\n"
+             "15 7\n"
+             "11 6\n";
+
+    run(input, output);
+    std::string expectation = "";
+
+    expectation += "5\n";
+    expectation += "9\n";
+    expectation += "6\n";
+    expectation += "2\n";
+    expectation += "3\n";
+    expectation += "1\n";
+    expectation += "13\n";
+    expectation += "15\n";
+    expectation += "11\n";
+
+    assert(output.str() == expectation);
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "9\n"
+             "5 0\n"
+             "9 1\n"
+             "6 2\n"
+             "2 3\n"
+             "3 4\n"
+             "1 5\n"
+             "13 6\n"
+             "15 7\n"
+             "11 8\n";
+
+    run(input, output);
+    std::string expectation = "";
+
+    expectation += "5\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "13\n";
+    expectation += "15\n";
+    expectation += "15\n";
+
+    assert(output.str() == expectation);
+  }
+  {
+    std::stringstream input;
+    std::stringstream output;
+    input << "10\n"
+             "5 0\n"
+             "9 1\n"
+             "6 2\n"
+             "2 3\n"
+             "3 4\n"
+             "1 5\n"
+             "13 6\n"
+             "15 7\n"
+             "11 8\n"
+             "-9 5\n";
+
+    run(input, output);
+    std::string expectation = "";
+
+    expectation += "5\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "9\n";
+    expectation += "13\n";
+    expectation += "15\n";
+    expectation += "15\n";
+    expectation += "11\n";
+
+    assert(output.str() == expectation);
+  }
+}
 
 int main() {
 //  AVLTree<int> tree;
@@ -303,6 +395,8 @@ int main() {
 //  std::cout << "Ok" << std::endl;
 
   run(std::cin, std::cout);
+
+//  testTask();
 
   return 0;
 }
