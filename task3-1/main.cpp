@@ -7,6 +7,7 @@
 #include "ListGraph.h"
 #include "MatrixGraph.h"
 #include "SetGraph.h"
+#include "ArcGraph.h"
 
 template<typename Callback>
 void dfs_(const IGraph& graph, std::vector<bool>& visited, int start_vertex, Callback callback) {
@@ -74,6 +75,22 @@ int main() {
   std::cout << "Set graph: " << std::endl;
 
   dfs(set_graph, [](int v) {
+    std::cout << v << std::endl;
+  });
+
+  ArcGraph arc_graph(set_graph);
+
+  std::cout << "Arc graph: " << std::endl;
+
+  dfs(arc_graph, [](int v) {
+    std::cout << v << std::endl;
+  });
+
+  ListGraph list_copy_graph(set_graph);
+
+  std::cout << "List copy constructor graph: " << std::endl;
+
+  dfs(list_copy_graph, [](int v) {
     std::cout << v << std::endl;
   });
 
