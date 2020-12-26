@@ -1,7 +1,19 @@
-#include "list_graph.h"
+#include "ListGraph.h"
 
 ListGraph::ListGraph(size_t nvertices) {
   graph.resize(nvertices);
+}
+
+ListGraph::ListGraph(IGraph &g) {
+  size_t nvertices = g.VerticesCount();
+  graph.resize(nvertices);
+
+  for (size_t i = 0; i < nvertices; i++) {
+    std::vector<int> childs = g.GetNextVertices(i);
+    for (auto& child : childs) {
+      add_edge(i, child);
+    }
+  }
 }
 
 int ListGraph::VerticesCount() const {
@@ -9,7 +21,7 @@ int ListGraph::VerticesCount() const {
 }
 
 void ListGraph::AddEdge(int from, int to) {
-  graph[from].push_back(to);
+  add_edge(from, to);
 }
 
 std::vector<int> ListGraph::GetNextVertices(int vertex) const {
@@ -36,4 +48,8 @@ std::vector<int> ListGraph::GetPrevVertices(int vertex) const {
   }
 
   return result;
+}
+
+void ListGraph::add_edge(int from, int to) {
+  graph[from].push_back(to);
 }

@@ -1,13 +1,15 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "abstract_graph.h"
 
-class ListGraph : public IGraph {
+class SetGraph : public IGraph {
 public:
-  ListGraph(size_t nvertices);
-  ListGraph(IGraph& graph);
+  SetGraph(size_t nvertices);
+  SetGraph(IGraph& g);
 
-  ~ListGraph() override = default;
+  ~SetGraph() override = default;
 
   void AddEdge(int from, int to) override;
 
@@ -17,5 +19,7 @@ public:
   std::vector<int> GetPrevVertices(int vertex) const override;
 
 private:
-  std::vector<std::vector<int>> graph;
+  void add_edge(int from, int to);
+
+  std::vector<std::unordered_set<int>> graph;
 };
