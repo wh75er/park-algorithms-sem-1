@@ -42,7 +42,7 @@ std::vector<int> SetGraph::GetPrevVertices(int vertex) const {
   for (size_t i = 0; i < graph.size(); i++) {
     if (i != vertex) {
       if (graph[i].find(vertex) != graph[i].end()) {
-        result.push_back(vertex);
+        result.push_back(i);
       }
     }
   }
