@@ -2,12 +2,6 @@
 #include <vector>
 #include <set>
 
-struct Edge {
-  int v1 = 0;
-  int v2 = 0;
-  size_t weight = 0;
-};
-
 struct IGraph {
   virtual ~IGraph() {}
 
@@ -15,56 +9,49 @@ struct IGraph {
 
   virtual int VerticesCount() const  = 0;
 
-  virtual std::vector<Edge> GetEdges(int vertex) const = 0;
+  virtual std::vector<std::pair<int, int>> GetEdges(int vertex) const = 0;
 };
 
-class ArcGraph : public IGraph {
+class ListGraph : public IGraph {
 
 public:
-  ArcGraph(size_t nvertices);
+  ListGraph(size_t nvertices);
 
-  ~ArcGraph() override = default;
+  ~ListGraph() override = default;
 
   void AddEdge(int v1, int v2, size_t weight) override;
 
   int VerticesCount() const override;
 
-  std::vector<Edge> GetEdges(int vertex) const override;
+  std::vector<std::pair<int, int>> GetEdges(int vertex) const override;
 
 private:
   void add_edge(int from, int to, size_t weight);
 
-  size_t nvertices;
-  std::vector<Edge> graph;
+  std::vector<std::vector<std::pair<int, int>>> graph;
 };
 
-ArcGraph::ArcGraph(size_t nvertices_) {
-  nvertices = nvertices_;
+ListGraph::ListGraph(size_t nvertices) {
+  graph.resize(nvertices);
 }
 
-int ArcGraph::VerticesCount() const {
-  return nvertices;
+int ListGraph::VerticesCount() const {
+  return graph.size();
 }
 
-void ArcGraph::AddEdge(int v1, int v2, size_t weight) {
-  graph.push_back(Edge {v1, v2, weight});
+void ListGraph::AddEdge(int v1, int v2, size_t weight) {
+  graph[v1].push_back(std::make_pair(v2, weight));
+  graph[v2].push_back(std::make_pair(v1, weight));
 }
 
-std::vector<Edge> ArcGraph::GetEdges(int vertex) const {
-  std::vector<Edge> result;
+std::vector<std::pair<int, int>> ListGraph::GetEdges(int vertex) const {
+  std::vector<std::pair<int, int>> result;
 
-  for (auto& edge : graph) {
-    if (edge.v1 == vertex || edge.v2 == vertex) {
-      result.push_back(edge);
-    }
-  }
+  result.resize(graph[vertex].size());
+  std::copy(graph[vertex].begin(), graph[vertex].end(), result.begin());
 
   return result;
 }
-
-void ArcGraph::add_edge(int from, int to, size_t weight) {
-}
-
 
 void dijkstra_(const IGraph& g, std::vector<bool>& visited, std::vector<size_t>& vertices_weights, const int start_node) {
   std::set<std::pair<int, int>> set;
@@ -79,21 +66,19 @@ void dijkstra_(const IGraph& g, std::vector<bool>& visited, std::vector<size_t>&
     if (!visited[vertex]) {
       visited[vertex] = true;
 
-      std::vector<Edge> edges = g.GetEdges(vertex);
+      std::vector<std::pair<int, int>> edges = g.GetEdges(vertex);
 
       for (auto edge : edges) {
-        int child = edge.v1 == vertex ? edge.v2 : edge.v1;
-
-        if (vertices_weights[vertex] + edge.weight < vertices_weights[child]) {
-          if (vertices_weights[child] != INT32_MAX) {
-            set.erase(std::make_pair(child, vertices_weights[child]));
+        if (vertices_weights[vertex] + edge.second < vertices_weights[edge.first]) {
+          if (vertices_weights[edge.first] != INT32_MAX) {
+            set.erase(std::make_pair(edge.first, vertices_weights[edge.first]));
           }
 
-          vertices_weights[child] = vertices_weights[vertex] + edge.weight;
-          visited[child] = false;
+          vertices_weights[edge.first] = vertices_weights[vertex] + edge.second;
+          visited[edge.first] = false;
         }
 
-        set.emplace(std::make_pair(child, vertices_weights[child]));
+        set.emplace(std::make_pair(edge.first, vertices_weights[edge.first]));
       }
     }
   }
@@ -131,7 +116,7 @@ void run(std::istream& input, std::ostream& output) {
   int nedges = 0;
   input >> nedges;
 
-  ArcGraph graph(nvertices);
+  ListGraph graph(nvertices);
 
   int v1 = 0;
   int v2 = 0;
