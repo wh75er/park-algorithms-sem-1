@@ -56,11 +56,11 @@ std::vector<std::pair<int, int>> ListGraph::GetEdges(int vertex) const {
 void dijkstra_(const IGraph& g, std::vector<bool>& visited, std::vector<size_t>& vertices_weights, const int start_node) {
   std::set<std::pair<int, int>> set;
 
-  set.emplace(std::make_pair(start_node, vertices_weights[start_node]));
+  set.emplace(std::make_pair(vertices_weights[start_node], start_node));
 
   while (!set.empty()) {
     auto top = set.begin();
-    int vertex = top->first;
+    int vertex = top->second;
     set.erase(top);
 
     if (!visited[vertex]) {
@@ -71,14 +71,14 @@ void dijkstra_(const IGraph& g, std::vector<bool>& visited, std::vector<size_t>&
       for (auto edge : edges) {
         if (vertices_weights[vertex] + edge.second < vertices_weights[edge.first]) {
           if (vertices_weights[edge.first] != INT32_MAX) {
-            set.erase(std::make_pair(edge.first, vertices_weights[edge.first]));
+            set.erase(std::make_pair(vertices_weights[edge.first], edge.first));
           }
 
           vertices_weights[edge.first] = vertices_weights[vertex] + edge.second;
           visited[edge.first] = false;
         }
 
-        set.emplace(std::make_pair(edge.first, vertices_weights[edge.first]));
+        set.emplace(std::make_pair(vertices_weights[edge.first], edge.first));
       }
     }
   }
